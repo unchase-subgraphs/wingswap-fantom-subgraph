@@ -1,4 +1,6 @@
-specVersion: 0.0.1
+specVersion: 0.0.4
+description: WingSwap is the first DeFi platform that provides both AMM and integrated NFT Farming on Fantom blockchain network.
+repository: https://github.com/unchase-subgraphs/wingswap-fantom-subgraph
 schema:
   file: ./schema.graphql
 dataSources:
@@ -8,16 +10,46 @@ dataSources:
     source:
       address: "0xc0719a9A35a2D9eBBFdf1C6d383a5E8E7b2ef7a8"
       abi: Factory
+      startBlock: 22580313
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
-        - PairCreated
+        - Pair
+        - Token
       abis:
         - name: Factory
           file: ./abis/Factory.json
+        - name: ERC20
+          file: ./abis/ERC20.json
+        - name: ERC20SymbolBytes
+          file: ./abis/ERC20SymbolBytes.json
+        - name: ERC20NameBytes
+          file: ./abis/ERC20NameBytes.json
       eventHandlers:
         - event: PairCreated(indexed address,indexed address,address,uint256)
           handler: handlePairCreated
       file: ./src/factory.ts
+templates:
+  - kind: ethereum/contract
+    name: Pair
+    network: fantom
+    source:
+      abi: Pair
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      file: ./src/core.ts
+      entities:
+        - Pair
+        - Token
+      abis:
+        - name: Pair
+          file: ./abis/pair.json
+        - name: Factory
+          file: ./abis/factory.json
+      eventHandlers:
+        - event: Sync(uint112,uint112)
+          handler: handleSync
